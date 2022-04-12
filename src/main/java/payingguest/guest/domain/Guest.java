@@ -79,7 +79,7 @@ public class Guest {
     @Column(name = "IdProofNumber", nullable = false, length = 256)
     private String idProofNumber;
 
-    @Column(name = "CreatedBy", nullable = false, length = 256)
+    @Column(name = "CreatedBy", nullable = false)
     private String createdBy;
 
     @Column(name = "CreationDate", nullable = false)
