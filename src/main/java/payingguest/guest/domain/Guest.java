@@ -88,6 +88,6 @@ public class Guest {
     @Column(name = "LastUpdatedBy", nullable = false, length = 256)
     private String lastUpdatedBy;
 
-    @Column(name = "LastUpdatedDate", nullable = false, length = 256)
+    @Column(name = "LastUpdatedDate")
     private Date lastUpdatedDate;
 }
