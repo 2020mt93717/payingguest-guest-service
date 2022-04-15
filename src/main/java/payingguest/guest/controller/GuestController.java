@@ -24,33 +24,59 @@
 package payingguest.guest.controller;
 
 
-import java.util.Collection;
-import java.util.List;
+import java.util.Optional;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import payingguest.guest.domain.Guest;
+import payingguest.guest.service.GuestService;
 
 @RestController
 public class GuestController {
 
+    @Autowired
+    private GuestService mGuestService;
+
     @GetMapping("/guest")
-    public Collection<Guest> loadAllGuests() {
-        Guest g1 = new Guest();
-        g1.setGuestId(1L);
-        g1.setFirstName("Jaikarthik");
-        g1.setLastName("Natarajan");
-        return List.of(g1);
+    public Iterable<Guest> loadAllGuests() {
+        return mGuestService.loadAllGuests();
     }
 
-    @GetMapping("/guest/{GuestId}")
+    @GetMapping("/guest/id/{GuestId}")
     public Guest findGuestById(final @PathVariable("GuestId") Long pGuestId) {
-        Guest g1 = new Guest();
-        g1.setGuestId(1L);
-        g1.setFirstName("Ramanan");
-        g1.setLastName("Natarajan");
-        return g1;
+        Optional<Guest> myGuest = mGuestService.findGuestByGuestId(pGuestId);
+        return myGuest.isPresent() ? myGuest.get() : null;
+    }
+
+    @GetMapping("/guest/mobile/{MobileNumber}")
+    public Guest findGuestByMobileNumber(@PathVariable("MobileNumber") String pMobileNumber) {
+        Optional<Guest> myGuest = mGuestService.findGuestByMobileNumber(pMobileNumber);
+        return myGuest.isPresent() ? myGuest.get() : null;
+    }
+
+    @PostMapping(
+            value = "/guest/create",
+            consumes = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE },
+            produces = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE })
+    public ResponseEntity<Guest> createGuest(@RequestBody Guest pGuest) {
+        mGuestService.createGuest(pGuest);
+        return new ResponseEntity<>(pGuest, HttpStatus.OK);
+    }
+
+    @PostMapping(
+            value = "/guest/update",
+            consumes = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE },
+            produces = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE })
+    public ResponseEntity<Guest> updateGuest(@RequestBody Guest pGuest) {
+        mGuestService.updateGuest(pGuest);
+        return new ResponseEntity<>(pGuest, HttpStatus.OK);
     }
 }
