@@ -1,0 +1,36 @@
+version: '3'
+
+services:
+  guest-db:
+    image: mysql:8.0
+    restart: always
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=guestdb
+      - MYSQL_USER=guestuser
+      - MYSQL_PASSWORD=guestpassword
+    volumes:
+      - /var/lib/mysql_data:/var/lib/mysql
+    networks:
+      - guest-network
+
+  app:
+    image: payingguest-guest-service:0.0.1-SNAPSHOT
+    restart: always
+    depends_on:
+      - guest-db
+    ports:
+      - 8081:8081
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://guest-db:3306/guestdb
+      SPRING_DATASOURCE_USERNAME: guestuser
+      SPRING_DATASOURCE_PASSWORD: guestpassword
+      SPRING_CLOUD_SERVICE-REGISTRY_AUTO-REGISTERATION_ENABLED: false
+      EUREKA_CLIENT_ENABLED: false
+      EUREKA_CLIENT_SERVICEURL_REGISTERWITHEUREKA: false
+    networks:
+      - guest-network
+
+networks:
+  guest-network:
+    driver: bridge
