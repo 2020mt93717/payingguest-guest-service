@@ -30,6 +30,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -45,12 +47,17 @@ public class GuestController {
     @Autowired
     private GuestService mGuestService;
 
+    @Autowired
+    private KafkaTemplate<String, String> mKafkaTemplate;
+
+    private static final String TOPIC = "NewTopic";
+
     @GetMapping("/guest")
     public Iterable<Guest> loadAllGuests() {
         return mGuestService.loadAllGuests();
     }
 
-    @GetMapping("/guest/id/{GuestId}")
+    @GetMapping("/guest/{GuestId}")
     public Guest findGuestById(final @PathVariable("GuestId") Long pGuestId) {
         Optional<Guest> myGuest = mGuestService.findGuestByGuestId(pGuestId);
         return myGuest.isPresent() ? myGuest.get() : null;
@@ -63,20 +70,21 @@ public class GuestController {
     }
 
     @PostMapping(
-            value = "/guest/create",
+            value = "/guest",
             consumes = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE },
             produces = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE })
     public ResponseEntity<Guest> createGuest(@RequestBody Guest pGuest) {
-        mGuestService.createGuest(pGuest);
+        if(pGuest.getGuestId() == 0) {
+            mGuestService.createGuest(pGuest);
+        } else {
+            mGuestService.updateGuest(pGuest);
+        }
         return new ResponseEntity<>(pGuest, HttpStatus.OK);
     }
 
-    @PostMapping(
-            value = "/guest/update",
-            consumes = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE },
-            produces = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE })
-    public ResponseEntity<Guest> updateGuest(@RequestBody Guest pGuest) {
-        mGuestService.updateGuest(pGuest);
-        return new ResponseEntity<>(pGuest, HttpStatus.OK);
+    @DeleteMapping("/guest/{GuestId}")
+    public ResponseEntity<String> deleteGuest(@PathVariable("GuestId") long pGuestId) {
+        mKafkaTemplate.send(TOPIC, "delete Guest => " + pGuestId);
+        return new ResponseEntity<>("Published Successfully", HttpStatus.OK);
     }
 }
