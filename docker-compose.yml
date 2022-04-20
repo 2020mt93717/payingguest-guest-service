@@ -1,6 +1,31 @@
 version: '3'
 
 services:
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+      ZOOKEEPER_SYNC_LIMIT: 2
+    networks:
+      - kafka-network
+
+  kafka:
+    image: confluentinc/cp-kafka
+    ports:
+      - 9094:9094
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENERS: INTERNAL://0.0.0.0:9092,OUTSIDE://0.0.0.0:9094
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:9092,OUTSIDE://localhost:9094
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,OUTSIDE:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+    networks:
+      - kafka-network
+
   guest-db:
     image: mysql:8.0
     restart: always
@@ -14,7 +39,7 @@ services:
     networks:
       - guest-network
 
-  app:
+  guest-service:
     image: payingguest-guest-service:0.0.1-SNAPSHOT
     restart: always
     depends_on:
@@ -28,9 +53,13 @@ services:
       SPRING_CLOUD_SERVICE-REGISTRY_AUTO-REGISTERATION_ENABLED: false
       EUREKA_CLIENT_ENABLED: false
       EUREKA_CLIENT_SERVICEURL_REGISTERWITHEUREKA: false
+      KAFKA_BOOTSTRAP_SERVER: kafka:9092
     networks:
       - guest-network
+      - kafka-network
 
 networks:
   guest-network:
+    driver: bridge
+  kafka-network:
     driver: bridge
