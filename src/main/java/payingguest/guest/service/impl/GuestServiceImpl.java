@@ -58,6 +58,12 @@ public class GuestServiceImpl implements GuestService {
         mGuestRepository.save(pGuest);
     }
 
+    @Transactional
+    @Override
+    public void deleteGuest(Long pGuestId) {
+        mGuestRepository.deleteById(pGuestId);
+    }
+
     @Override
     public Optional<Guest> findGuestByGuestId(Long pGuestId) {
         return mGuestRepository.findById(pGuestId);

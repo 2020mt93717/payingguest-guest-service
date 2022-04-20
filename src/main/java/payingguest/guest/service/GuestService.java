@@ -36,6 +36,8 @@ public interface GuestService {
 
     void updateGuest(Guest pGuest);
 
+    void deleteGuest(Long pGuestId);
+
     Optional<Guest> findGuestByGuestId(Long pGuestId);
 
     Optional<Guest> findGuestByMobileNumber(String pMobileNumber);

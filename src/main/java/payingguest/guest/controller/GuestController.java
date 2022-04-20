@@ -50,7 +50,7 @@ public class GuestController {
     @Autowired
     private KafkaTemplate<String, String> mKafkaTemplate;
 
-    private static final String TOPIC = "NewTopic";
+    private static final String DELETE_GUEST_TOPIC = "DELETE_GUEST_TOPIC";
 
     @GetMapping("/guest")
     public Iterable<Guest> loadAllGuests() {
@@ -84,7 +84,8 @@ public class GuestController {
 
     @DeleteMapping("/guest/{GuestId}")
     public ResponseEntity<String> deleteGuest(@PathVariable("GuestId") long pGuestId) {
-        mKafkaTemplate.send(TOPIC, "delete Guest => " + pGuestId);
-        return new ResponseEntity<>("Published Successfully", HttpStatus.OK);
+        mGuestService.deleteGuest(pGuestId);
+        mKafkaTemplate.send(DELETE_GUEST_TOPIC, String.valueOf(pGuestId));
+        return new ResponseEntity<>("Guest Deleted Successfully", HttpStatus.OK);
     }
 }
