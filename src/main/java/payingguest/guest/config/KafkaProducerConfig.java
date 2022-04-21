@@ -40,7 +40,7 @@ import org.springframework.kafka.core.ProducerFactory;
 @EnableKafka
 public class KafkaProducerConfig {
 
-    @Value("${kafka.bootstrap.server}")
+    @Value("${spring.kafka.bootstrap-servers}")
     private String mKafkaBootstrapServer;
 
     @Bean
